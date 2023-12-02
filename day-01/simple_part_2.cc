@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iostream>
 
+#include "dfa.h"
+
 int main(int argc, char* argv[])
 {
 	if (argc != 2)
@@ -16,32 +18,33 @@ int main(int argc, char* argv[])
 	int last{-1};
 	int sum{0};
 
+	DFA::State state{DFA::State::start};
+
 	while (std::getline(input_file, line))
 	{
 		size_t i{0};
 
-		// set first and last
 		for (; i < line.size(); i += 1)
 		{
-			char character = line[i];
+			state = DFA::transition(state, line[i]);
 
-			if (std::isdigit(character))
+			if (DFA::is_accepting(state))
 			{
-				first = character - '0';
+				first = DFA::get_int_representation(state);
 				last = first;
-
-				i += 1;
 
 				break;
 			}
 		}
 
-		// set last if there is more than one digit on the line
 		for (; i < line.size(); i += 1)
 		{
-			char character = line[i];
+			state = DFA::transition(state, line[i]);
 
-			if (std::isdigit(character)) { last = character - '0'; }
+			if (DFA::is_accepting(state))
+			{
+				last = DFA::get_int_representation(state);
+			}
 		}
 
 		if (first == -1) { continue; }
@@ -52,7 +55,7 @@ int main(int argc, char* argv[])
 		last = -1;
 	}
 
-	std::cout << "\nSum: " << sum << '\n';
+	std::cout << "Sum: " << sum << '\n';
 
 	return 0;
 }
