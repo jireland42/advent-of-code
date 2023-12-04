@@ -101,6 +101,8 @@ int main(int argc, char* argv[])
 		winning_numbers.clear();
 	}
 
+	std::cout << '\n' << "Points: " << total_points << '\n';;
+
 	return 0;
 }
 
