@@ -7,6 +7,11 @@
 #include <sstream>
 #include <vector>
 
+struct Range
+{
+	size_t base;
+	size_t length;
+};
 
 int main(int argc, char* argv[])
 {
@@ -27,24 +32,26 @@ int main(int argc, char* argv[])
 	std::getline(input_file, line);
 
 	std::string header{};
-	size_t seed_type{};
 	size_t destination_range_start{};
 	size_t source_range_start{};
 	size_t range_length{};
 
 	line_stream >> header;
 
-	std::vector<size_t> container_1;
+	std::vector<Range> container_1;
 
-	while (line_stream >> seed_type)
+	size_t seed_type{};
+	size_t seed_range{};
+
+	while (line_stream >> seed_type >> seed_range)
 	{
-		container_1.emplace_back(seed_type);
+		container_1.emplace_back(Range{seed_type, seed_range});
 	}
 
-	std::vector<size_t> container_2(container_1.size());
+	std::vector<Range> container_2(container_1.size());
 
-	std::vector<size_t>& current_container{container_1};
-	std::vector<size_t>& mapped_container{container_2};
+	std::vector<Range>& current_container{container_1};
+	std::vector<Range>& mapped_container{container_2};
 
 	auto mapping_container_start{mapped_container.begin()};
 
@@ -53,7 +60,11 @@ int main(int argc, char* argv[])
 		// x-to-y map:
 		if (!std::getline(input_file, line)) { break; }
 
-		std::sort(current_container.begin(), current_container.end());
+		std::sort(
+			current_container.begin(),
+			current_container.end(),
+			[](Range const& lhs, Range const& rhs) { return lhs.base < rhs.base; }
+		);
 
 		// 1136439539 28187015 34421000
 		// ...
@@ -79,17 +90,20 @@ int main(int argc, char* argv[])
 				std::lower_bound(
 					current_container.cbegin(),
 					current_container.cend(),
-					source_range_start
+					source_range_start,
+					[](Range const& element, auto value){ return element.base < value; }
 				)
 			};
 			auto right_endpoint{
 				std::upper_bound(
 					current_container.cbegin(),
 					current_container.cend(),
-					source_range_start + range_length - 1
+					source_range_start + range_length - 1,
+					[](auto value, Range const& element){ return element.base < value; }
 				)
 			};
 
+			/*
 			// if the map applies to any values, then map them to the mapped
 			// values array
 			if (left_endpoint != right_endpoint)
@@ -107,6 +121,7 @@ int main(int argc, char* argv[])
 
 			// removed mapped items from working array
 			current_container.erase(left_endpoint, right_endpoint);
+			*/
 		}
 
 		// copy remaining items that map to themselves 
@@ -123,6 +138,7 @@ int main(int argc, char* argv[])
 	}
 
 	// check the set of locations to find the closest location
+	/*
 	auto closest_location{
 		std::accumulate(
 			current_container.begin(),
@@ -131,8 +147,9 @@ int main(int argc, char* argv[])
 			[](size_t lhs, size_t rhs) { return std::min(lhs, rhs); }
 		)
 	};
+	*/
 
-	std::cout << "Closest Location: " << closest_location << '\n';
+	//std::cout << "Closest Location: " << closest_location << '\n';
 
 	return 0;
 }
